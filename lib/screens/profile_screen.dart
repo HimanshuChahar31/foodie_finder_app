@@ -25,22 +25,24 @@ class ProfileScreen extends StatelessWidget {
     final location = auth.location ?? 'Location not added';
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Profile',
-          style: AppTextStyles.h4.copyWith(color: AppColors.onPrimary),
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.cream, AppColors.background],
+          ),
         ),
-        backgroundColor: AppColors.ink,
-        elevation: 0,
-      ),
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          children: [
-            Card(
-              child: Padding(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            children: [
+              Container(
                 padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppColors.ink,
+                  borderRadius: BorderRadius.circular(28),
+                ),
                 child: Row(
                   children: [
                     CircleAvatar(
@@ -70,16 +72,23 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
+                            'Profile',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.creamDark,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
                             contact,
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.cream,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             address,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.creamDark,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -88,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
                           Text(
                             location,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.creamDark,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -99,8 +108,7 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
             _SectionTitle('Account'),
             _OptionCard(
               children: [
@@ -129,7 +137,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
             _SectionTitle('Support'),
             _OptionCard(
               children: [
@@ -160,7 +168,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -435,6 +444,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _locationController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
+  late final TextEditingController _passwordController;
 
   @override
   void initState() {
@@ -445,6 +455,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _locationController = TextEditingController(text: auth.location ?? '');
     _emailController = TextEditingController(text: auth.email ?? '');
     _phoneController = TextEditingController(text: auth.phone ?? '');
+    _passwordController = TextEditingController();
   }
 
   @override
@@ -454,6 +465,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _locationController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -501,17 +513,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 icon: Icons.phone_rounded,
                 required: false,
               ),
+              _Field(
+                controller: _passwordController,
+                label: 'New Password',
+                icon: Icons.lock_rounded,
+                required: false,
+                obscureText: true,
+              ),
               const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState?.validate() ?? false) {
-                    context.read<AuthProvider>().updateProfile(
+                    final auth = context.read<AuthProvider>();
+                    auth.updateProfile(
                       name: _nameController.text.trim(),
                       address: _addressController.text.trim(),
                       location: _locationController.text.trim(),
                       email: _emailController.text,
                       phone: _phoneController.text,
                     );
+                    final nextPassword = _passwordController.text.trim();
+                    if (nextPassword.isNotEmpty) {
+                      await auth.updatePassword(nextPassword);
+                    }
+                    if (!context.mounted) return;
                     Navigator.of(context).pop();
                   }
                 },
@@ -562,6 +587,7 @@ class _Field extends StatelessWidget {
   final IconData icon;
   final int maxLines;
   final bool required;
+  final bool obscureText;
 
   const _Field({
     required this.controller,
@@ -569,6 +595,7 @@ class _Field extends StatelessWidget {
     required this.icon,
     this.maxLines = 1,
     this.required = true,
+    this.obscureText = false,
   });
 
   @override
@@ -578,6 +605,7 @@ class _Field extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
+        obscureText: obscureText,
         decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
         validator: required
             ? (value) =>

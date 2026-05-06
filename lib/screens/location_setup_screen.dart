@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
@@ -16,9 +19,7 @@ class LocationSetupScreen extends StatefulWidget {
 class _LocationSetupScreenState extends State<LocationSetupScreen> {
   final _manualLocationController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _permissionDenied = false;
-  bool _isRequestingPermission = false;
-  String? _statusMessage;
+  bool _loadingGps = false;
 
   @override
   void dispose() {
@@ -26,163 +27,88 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
     super.dispose();
   }
 
-  Future<void> _requestLocationPermission() async {
-    setState(() {
-      _isRequestingPermission = true;
-      _statusMessage = null;
-    });
-
+  Future<void> _continueWithGpsType() async {
+    setState(() => _loadingGps = true);
     final hasInternet = await hasInternetConnection();
-    await Future.delayed(const Duration(milliseconds: 200));
-
+    setState(() => _loadingGps = false);
     if (!mounted) return;
 
-    if (!hasInternet) {
-      setState(() {
-        _statusMessage =
-            'No internet detected. Please enter your location manually.';
-        _isRequestingPermission = false;
-      });
-      return;
-    }
-
-    final granted = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Location Permission', style: AppTextStyles.h4),
-          content: const Text('Allow Foodie Finder to access your location?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Deny'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Allow'),
-            ),
-          ],
-        );
-      },
-    );
-
+    final location = hasInternet ? 'GPS Enabled Location' : 'GPS unavailable, manual pending';
+    await context.read<AuthProvider>().setLocationDetails(location: location);
     if (!mounted) return;
-
-    if (granted == true) {
-      Navigator.of(
-        context,
-      ).pushReplacement(fadeRoute(page: const HomeScreen()));
-    }
-
-    setState(() {
-      _permissionDenied = true;
-      _statusMessage =
-          'Permission denied. Enter your location manually to continue.';
-      _isRequestingPermission = false;
-    });
+    Navigator.of(context).pushReplacement(fadeRoute(page: const HomeScreen()));
   }
 
-  void _saveManualLocation() {
-    if (_formKey.currentState?.validate() ?? false) {
-      Navigator.of(
-        context,
-      ).pushReplacement(fadeRoute(page: const HomeScreen()));
-    }
+  Future<void> _continueWithManual() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    await context.read<AuthProvider>().setLocationDetails(
+      location: _manualLocationController.text.trim(),
+    );
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(fadeRoute(page: const HomeScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Location Setup',
-          style: AppTextStyles.h4.copyWith(color: AppColors.onPrimary),
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.cream, AppColors.background],
+          ),
         ),
-        backgroundColor: AppColors.primary,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Set your location',
-                style: AppTextStyles.h2.copyWith(color: AppColors.primary),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Allow location permission or enter your location manually.',
-                style: AppTextStyles.bodyLarge,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              ElevatedButton.icon(
-                onPressed: _isRequestingPermission
-                    ? null
-                    : _requestLocationPermission,
-                icon: const Icon(Icons.location_on),
-                label: Text(
-                  _isRequestingPermission
-                      ? 'Checking...'
-                      : 'Allow location permission',
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              if (_statusMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Text(
-                    _statusMessage!,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: _permissionDenied
-                          ? AppColors.error
-                          : AppColors.warning,
-                    ),
-                  ),
-                ),
-              const Divider(),
-              const SizedBox(height: AppSpacing.md),
-              Form(
-                key: _formKey,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Manual location', style: AppTextStyles.h4),
-                    const SizedBox(height: AppSpacing.sm),
-                    TextFormField(
-                      controller: _manualLocationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Location',
-                        hintText: 'Enter city or address',
-                        prefixIcon: Icon(Icons.map),
+                    Text('Set your location', style: AppTextStyles.h2),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Choose GPS for quick setup or add your location manually.',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
                       ),
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'Please enter your location';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    ElevatedButton(
-                      onPressed: _saveManualLocation,
-                      child: const Text('Save location'),
+                    ElevatedButton.icon(
+                      onPressed: _loadingGps ? null : _continueWithGpsType,
+                      icon: const Icon(Icons.gps_fixed_rounded),
+                      label: Text(_loadingGps ? 'Checking...' : 'Use GPS'),
+                    ),
+                    const SizedBox(height: 16),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _manualLocationController,
+                            decoration: const InputDecoration(
+                              labelText: 'Manual Location',
+                              prefixIcon: Icon(Icons.location_on_rounded),
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Enter location'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: _continueWithManual,
+                            child: const Text('Continue with Manual Location'),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              if (_permissionDenied)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.md),
-                  child: Text(
-                    'Location permission was denied. Manual entry is available below.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),

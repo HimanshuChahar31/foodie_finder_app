@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
-import '../utils/route_transitions.dart';
-import 'user_details_screen.dart';
+
+enum _AuthMode { choose, login, signup }
+enum _SignupMethod { email, phone }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,42 +17,81 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isPhoneLogin = false;
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _otpController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _signupPasswordController = TextEditingController();
+
+  _AuthMode _mode = _AuthMode.choose;
+  _SignupMethod _signupMethod = _SignupMethod.email;
+  String _selectedGender = 'Male';
+  bool _isLoading = false;
+  bool _otpRequested = false;
+  String? _error;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
+    _otpController.dispose();
+    _nameController.dispose();
+    _signupPasswordController.dispose();
     super.dispose();
   }
 
-  void _login() {
-    if (_formKey.currentState?.validate() ?? false) {
-      final authProvider = context.read<AuthProvider>();
-      if (_isPhoneLogin) {
-        authProvider.loginWithPhone(_phoneController.text.trim());
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    final auth = context.read<AuthProvider>();
+    try {
+      if (_mode == _AuthMode.login) {
+        final username = _usernameController.text.trim();
+        final email = username.contains('@') ? username : '$username@foodiefinder.app';
+        await auth.loginWithEmailPassword(email: email, password: _passwordController.text);
       } else {
-        authProvider.loginWithEmail(_emailController.text.trim());
+        if (_signupMethod == _SignupMethod.email) {
+          await auth.loginWithEmailPassword(
+            email: _emailController.text.trim(),
+            password: _signupPasswordController.text,
+          );
+          await auth.setSignupProfile(
+            name: _nameController.text.trim(),
+            gender: _selectedGender,
+          );
+        } else {
+          if (!_otpRequested) {
+            await auth.sendPhoneOtp(_phoneController.text.trim());
+            setState(() => _otpRequested = true);
+            return;
+          }
+          await auth.verifyPhoneOtp(
+            phoneNumber: _phoneController.text.trim(),
+            smsCode: _otpController.text.trim(),
+          );
+          await auth.setSignupProfile(
+            name: _nameController.text.trim(),
+            gender: _selectedGender,
+          );
+        }
       }
 
-      Navigator.of(
-        context,
-      ).pushReplacement(fadeRoute(page: const UserDetailsScreen()));
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  void _toggleLoginMethod() {
-    setState(() {
-      _isPhoneLogin = !_isPhoneLogin;
-      _emailController.clear();
-      _phoneController.clear();
-      _passwordController.clear();
-    });
   }
 
   @override
@@ -61,262 +102,178 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.cream, AppColors.background, Color(0xFFFFE1C5)],
+            colors: [AppColors.cream, AppColors.background, Color(0xFFFFE2C9)],
           ),
         ),
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Form(
-                    key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: AppColors.ink,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          decoration: BoxDecoration(
-                            color: AppColors.ink,
-                            borderRadius: BorderRadius.circular(32),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withAlpha(60),
-                                blurRadius: 36,
-                                offset: const Offset(0, 18),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 76,
-                                width: 76,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.accent,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.local_fire_department_rounded,
-                                  color: AppColors.ink,
-                                  size: 42,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                              Text(
-                                'Foodie Finder',
-                                style: AppTextStyles.h1.copyWith(
-                                  color: AppColors.cream,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              Text(
-                                'Find bold bites, quick tables, and your next craving.',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.creamDark,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
+                        Text(
+                          'Foodie Finder',
+                          style: AppTextStyles.h2.copyWith(color: AppColors.cream),
                         ),
-                        const SizedBox(height: AppSpacing.lg),
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(28),
-                            border: Border.all(color: AppColors.creamDark),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                'Welcome back',
-                                style: AppTextStyles.h3.copyWith(
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                              _LoginToggle(
-                                isPhoneLogin: _isPhoneLogin,
-                                onToggle: _toggleLoginMethod,
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                              if (_isPhoneLogin)
-                                TextFormField(
-                                  controller: _phoneController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Phone Number',
-                                    hintText: 'Enter your phone number',
-                                    prefixIcon: Icon(Icons.phone),
-                                  ),
-                                  keyboardType: TextInputType.phone,
-                                  validator: (value) {
-                                    if (value?.isEmpty ?? true) {
-                                      return 'Please enter your phone number';
-                                    }
-                                    if (value!.length < 10) {
-                                      return 'Please enter a valid phone number';
-                                    }
-                                    return null;
-                                  },
-                                )
-                              else
-                                TextFormField(
-                                  controller: _emailController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Email',
-                                    hintText: 'Enter your email',
-                                    prefixIcon: Icon(Icons.email),
-                                  ),
-                                  keyboardType: TextInputType.emailAddress,
-                                  validator: (value) {
-                                    if (value?.isEmpty ?? true) {
-                                      return 'Please enter your email';
-                                    }
-                                    if (!RegExp(
-                                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                    ).hasMatch(value!)) {
-                                      return 'Please enter a valid email';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              const SizedBox(height: AppSpacing.md),
-                              if (!_isPhoneLogin) ...[
-                                TextFormField(
-                                  controller: _passwordController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Password',
-                                    hintText: 'Enter your password',
-                                    prefixIcon: Icon(Icons.lock),
-                                  ),
-                                  obscureText: true,
-                                  validator: (value) {
-                                    if (value?.isEmpty ?? true) {
-                                      return 'Please enter your password';
-                                    }
-                                    if (value!.length < 6) {
-                                      return 'Password must be at least 6 characters';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: AppSpacing.lg),
-                              ] else
-                                const SizedBox(height: AppSpacing.lg),
-                              ElevatedButton.icon(
-                                onPressed: _login,
-                                icon: const Icon(Icons.arrow_forward_rounded),
-                                label: Text(
-                                  _isPhoneLogin ? 'Login with Phone' : 'Login',
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                              TextButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Signup not implemented yet',
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Don\'t have an account? Sign up',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.primaryDark,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'Login or signup to continue',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.creamDark,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LoginToggle extends StatelessWidget {
-  final bool isPhoneLogin;
-  final VoidCallback onToggle;
-
-  const _LoginToggle({required this.isPhoneLogin, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          _ToggleOption(
-            label: 'Email',
-            selected: !isPhoneLogin,
-            onTap: isPhoneLogin ? onToggle : null,
-          ),
-          _ToggleOption(
-            label: 'Phone',
-            selected: isPhoneLogin,
-            onTap: !isPhoneLogin ? onToggle : null,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ToggleOption extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  const _ToggleOption({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Text(
-            label,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: selected ? AppColors.onPrimary : AppColors.textSecondary,
-              fontWeight: FontWeight.w800,
+                  const SizedBox(height: AppSpacing.lg),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                if (_mode == _AuthMode.choose) ...[
+                  const SizedBox(height: 20),
+                  ElevatedButton(onPressed: () => setState(() => _mode = _AuthMode.login), child: const Text('Login')),
+                  const SizedBox(height: 12),
+                  OutlinedButton(onPressed: () => setState(() => _mode = _AuthMode.signup), child: const Text('Signup')),
+                ] else ...[
+                  TextButton(
+                    onPressed: () => setState(() {
+                      _mode = _AuthMode.choose;
+                      _otpRequested = false;
+                      _error = null;
+                    }),
+                    child: const Text('Back'),
+                  ),
+                  if (_mode == _AuthMode.login) ...[
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(labelText: 'Username'),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter username' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars password' : null,
+                    ),
+                  ] else ...[
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Name'),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter name' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedGender,
+                      decoration: const InputDecoration(labelText: 'Gender'),
+                      items: const [
+                        DropdownMenuItem(value: 'Male', child: Text('Male')),
+                        DropdownMenuItem(value: 'Female', child: Text('Female')),
+                        DropdownMenuItem(value: 'Other', child: Text('Other')),
+                      ],
+                      onChanged: (v) => setState(() => _selectedGender = v ?? 'Male'),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: RadioListTile<_SignupMethod>(
+                            value: _SignupMethod.email,
+                            groupValue: _signupMethod,
+                            title: const Text('Email'),
+                            onChanged: (v) => setState(() {
+                              _signupMethod = v!;
+                              _otpRequested = false;
+                            }),
+                          ),
+                        ),
+                        Expanded(
+                          child: RadioListTile<_SignupMethod>(
+                            value: _SignupMethod.phone,
+                            groupValue: _signupMethod,
+                            title: const Text('Phone'),
+                            onChanged: (v) => setState(() {
+                              _signupMethod = v!;
+                              _otpRequested = false;
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_signupMethod == _SignupMethod.email) ...[
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(labelText: 'Email'),
+                        validator: (v) => (v == null || !v.contains('@')) ? 'Enter valid email' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _signupPasswordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(labelText: 'Password'),
+                        validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars password' : null,
+                      ),
+                    ] else ...[
+                      TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(labelText: 'Phone Number'),
+                        validator: (v) => (v == null || v.trim().length < 10) ? 'Enter valid phone number' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _signupPasswordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(labelText: 'Password'),
+                        validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars password' : null,
+                      ),
+                      if (_otpRequested) ...[
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _otpController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'OTP'),
+                          validator: (v) => (!_otpRequested || (v != null && v.trim().length >= 6)) ? null : 'Enter valid OTP',
+                        ),
+                      ],
+                    ],
+                  ],
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _submit,
+                    child: Text(
+                      _mode == _AuthMode.login
+                          ? 'Login'
+                          : (_signupMethod == _SignupMethod.phone && !_otpRequested)
+                              ? 'Send OTP'
+                              : 'Continue',
+                    ),
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 8),
+                    Text(_error!, style: const TextStyle(color: Colors.red)),
+                  ],
+                ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       ),
