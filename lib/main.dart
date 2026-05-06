@@ -5,6 +5,7 @@ import 'providers/auth_provider.dart';
 import 'providers/dish_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/booking_provider.dart';
 import 'screens/login_screen.dart';
 
 void main() {
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DishProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => BookingProvider()),
       ],
       child: MaterialApp(
         title: 'Foodie Finder',

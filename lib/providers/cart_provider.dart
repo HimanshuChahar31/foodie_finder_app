@@ -42,7 +42,7 @@ class CartProvider extends ChangeNotifier {
   double get deliveryDistanceKm => _items.isEmpty
       ? 0
       : _items.values
-            .map((item) => item.dish.distanceKm)
+            .map((item) => item.dish.distanceKm ?? 0)
             .reduce((a, b) => a > b ? a : b);
   double get deliveryFee =>
       _items.isEmpty ? 0 : deliveryPerKm * deliveryDistanceKm;
@@ -91,6 +91,12 @@ class CartProvider extends ChangeNotifier {
       ),
     );
     _items.clear();
+    notifyListeners();
+  }
+
+  void clearAll() {
+    _items.clear();
+    _orders.clear();
     notifyListeners();
   }
 }

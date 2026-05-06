@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/restaurant.dart';
+import '../providers/auth_provider.dart';
+import '../providers/booking_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
@@ -71,6 +74,29 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void _confirmBooking() {
+    final auth = context.read<AuthProvider>();
+    final bookingProvider = context.read<BookingProvider>();
+    final userName = (auth.name?.trim().isNotEmpty ?? false)
+        ? auth.name!.trim()
+        : 'Foodie User';
+    final contact = auth.email?.trim().isNotEmpty ?? false
+        ? auth.email!.trim()
+        : (auth.phone?.trim().isNotEmpty ?? false
+              ? auth.phone!.trim()
+              : 'No contact');
+
+    bookingProvider.addBooking(
+      BookingRecord(
+        userName: userName,
+        contact: contact,
+        hotelName: _selectedHotel.name,
+        cuisine: _selectedHotel.cuisine,
+        seatCount: _seatCount,
+        amount: _totalCost,
+        bookedAt: DateTime.now(),
+      ),
+    );
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

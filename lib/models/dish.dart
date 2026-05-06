@@ -4,7 +4,7 @@ class Dish {
   final List<String> ingredients;
   final double price;
   final int deliveryTime; // in minutes
-  final double distanceKm;
+  final double? distanceKm;
   final String restaurantName;
   final String location;
   final double rating;
@@ -17,7 +17,7 @@ class Dish {
     required this.ingredients,
     required this.price,
     required this.deliveryTime,
-    required this.distanceKm,
+    this.distanceKm,
     required this.restaurantName,
     required this.location,
     required this.rating,

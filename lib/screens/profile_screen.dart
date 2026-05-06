@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/booking_provider.dart';
 import '../providers/cart_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
@@ -116,6 +117,12 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const Divider(height: 1),
                 ProfileOptionTile(
+                  icon: Icons.event_seat_rounded,
+                  title: 'Booking History',
+                  onTap: () => _navigate(context, const BookingHistoryScreen()),
+                ),
+                const Divider(height: 1),
+                ProfileOptionTile(
                   icon: Icons.edit_rounded,
                   title: 'Edit Profile',
                   onTap: () => _navigate(context, const EditProfileScreen()),
@@ -143,6 +150,8 @@ class ProfileScreen extends StatelessWidget {
                   title: 'Logout',
                   onTap: () {
                     context.read<AuthProvider>().logout();
+                    context.read<CartProvider>().clearAll();
+                    context.read<BookingProvider>().clear();
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                       (_) => false,
@@ -153,6 +162,85 @@ class ProfileScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class BookingHistoryScreen extends StatelessWidget {
+  const BookingHistoryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final bookings = context.watch<BookingProvider>().bookings;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Booking History',
+          style: AppTextStyles.h4.copyWith(color: AppColors.onPrimary),
+        ),
+        backgroundColor: AppColors.ink,
+      ),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: bookings.isEmpty
+            ? const _EmptyState(
+                icon: Icons.event_busy_outlined,
+                title: 'No bookings yet',
+                subtitle: 'Your confirmed table bookings will appear here.',
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                itemCount: bookings.length,
+                itemBuilder: (context, index) {
+                  final booking = bookings[index];
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(booking.hotelName, style: AppTextStyles.h4),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            booking.cuisine,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Booked by: ${booking.userName}',
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                          Text(
+                            'Contact: ${booking.contact}',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${booking.seatCount} seats',
+                                style: AppTextStyles.bodyMedium,
+                              ),
+                              Text(
+                                'Rs. ${booking.amount.toStringAsFixed(0)}',
+                                style: AppTextStyles.h4.copyWith(
+                                  color: AppColors.primaryDark,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }

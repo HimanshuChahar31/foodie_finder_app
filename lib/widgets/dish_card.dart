@@ -218,7 +218,7 @@ class _DishCardState extends State<DishCard>
                       ),
                       const SizedBox(width: 2),
                       Text(
-                        '${widget.dish.distanceKm.toStringAsFixed(1)} km',
+                        '${(widget.dish.distanceKm ?? 0).toStringAsFixed(1)} km',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.cream,
                           fontWeight: FontWeight.w700,
