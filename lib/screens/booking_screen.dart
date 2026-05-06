@@ -1,0 +1,449 @@
+import 'package:flutter/material.dart';
+import '../models/restaurant.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_spacing.dart';
+import '../utils/app_text_styles.dart';
+
+class BookingScreen extends StatefulWidget {
+  const BookingScreen({super.key});
+
+  @override
+  State<BookingScreen> createState() => _BookingScreenState();
+}
+
+class _BookingScreenState extends State<BookingScreen> {
+  static final List<Restaurant> _hotels = [
+    Restaurant(
+      id: 'h1',
+      name: 'The Copper Tandoor',
+      rating: 4.8,
+      distance: 1.2,
+      pricePerSeat: 899,
+      imageUrl: 'https://picsum.photos/500/320?random=31',
+      cuisine: 'North Indian - Family Dining',
+      description:
+          'Warm tandoor plates, soft lighting, and roomy tables for relaxed dinner plans.',
+    ),
+    Restaurant(
+      id: 'h2',
+      name: 'Urban Spice Table',
+      rating: 4.6,
+      distance: 2.4,
+      pricePerSeat: 699,
+      imageUrl: 'https://picsum.photos/500/320?random=32',
+      cuisine: 'Street Food - Casual',
+      description:
+          'Fast service, bold chaats, and a lively dining room close to the city center.',
+    ),
+    Restaurant(
+      id: 'h3',
+      name: 'Green Bowl House',
+      rating: 4.7,
+      distance: 3.1,
+      pricePerSeat: 799,
+      imageUrl: 'https://picsum.photos/500/320?random=33',
+      cuisine: 'Vegan - Healthy',
+      description:
+          'Fresh bowls, quiet seating, and bright interiors for lighter group meals.',
+    ),
+    Restaurant(
+      id: 'h4',
+      name: 'Harbor Grill Cafe',
+      rating: 4.5,
+      distance: 4.0,
+      pricePerSeat: 1199,
+      imageUrl: 'https://picsum.photos/500/320?random=34',
+      cuisine: 'Grill - Continental',
+      description:
+          'Comfortable booth seating with grilled specials and a polished evening vibe.',
+    ),
+  ];
+
+  Restaurant _selectedHotel = _hotels.first;
+  int _seatCount = 2;
+
+  double get _totalCost => _selectedHotel.pricePerSeat * _seatCount;
+
+  void _updateSeats(int delta) {
+    setState(() {
+      _seatCount = (_seatCount + delta).clamp(1, 12);
+    });
+  }
+
+  void _confirmBooking() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Booked $_seatCount seats at ${_selectedHotel.name} for Rs. ${_totalCost.toStringAsFixed(0)}',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(
+          'Book Seats',
+          style: AppTextStyles.h4.copyWith(color: AppColors.onPrimary),
+        ),
+        backgroundColor: AppColors.ink,
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.creamDark)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  _CompactSeatButton(
+                    icon: Icons.remove_rounded,
+                    onPressed: _seatCount > 1 ? () => _updateSeats(-1) : null,
+                  ),
+                  Container(
+                    width: 68,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.cream,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$_seatCount',
+                          style: AppTextStyles.h4.copyWith(
+                            color: AppColors.primaryDark,
+                          ),
+                        ),
+                        Text(
+                          'seats',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _CompactSeatButton(
+                    icon: Icons.add_rounded,
+                    onPressed: _seatCount < 12 ? () => _updateSeats(1) : null,
+                  ),
+                  const Spacer(),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Total amount',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        'Rs. ${_totalCost.toStringAsFixed(0)}',
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.primaryDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _confirmBooking,
+                  icon: const Icon(Icons.event_available_rounded),
+                  label: const Text('Confirm'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: AppColors.ink,
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      'Reserve your table',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Choose a hotel and seats',
+                    style: AppTextStyles.h2.copyWith(color: AppColors.cream),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Pick a dining spot, adjust seat count, and see the total instantly.',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.creamDark,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Available Hotels',
+              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ..._hotels.map(
+              (hotel) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: _HotelBookingCard(
+                  hotel: hotel,
+                  selected: hotel.id == _selectedHotel.id,
+                  onTap: () => setState(() => _selectedHotel = hotel),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HotelBookingCard extends StatelessWidget {
+  final Restaurant hotel;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _HotelBookingCard({
+    required this.hotel,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.creamDark,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(22),
+              ),
+              child: Stack(
+                children: [
+                  Image.network(
+                    hotel.imageUrl,
+                    height: 138,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 138,
+                      color: AppColors.cream,
+                      child: const Icon(Icons.restaurant_rounded),
+                    ),
+                  ),
+                  Positioned(
+                    top: AppSpacing.sm,
+                    right: AppSpacing.sm,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.ink.withAlpha(220),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.star_rounded,
+                            size: 16,
+                            color: AppColors.accent,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            hotel.rating.toStringAsFixed(1),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.cream,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          hotel.name,
+                          style: AppTextStyles.h4.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      if (selected)
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.primary,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    hotel.cuisine,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.primaryDark,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    hotel.description,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: [
+                      _InfoPill(
+                        icon: Icons.location_on_rounded,
+                        label: '${hotel.distance.toStringAsFixed(1)} km away',
+                      ),
+                      _InfoPill(
+                        icon: Icons.event_seat_rounded,
+                        label:
+                            'Rs. ${hotel.pricePerSeat.toStringAsFixed(0)} / seat',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _InfoPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.cream,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: AppColors.primaryDark),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompactSeatButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  const _CompactSeatButton({required this.icon, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filled(
+      onPressed: onPressed,
+      icon: Icon(icon),
+      style: IconButton.styleFrom(
+        backgroundColor: AppColors.ink,
+        disabledBackgroundColor: AppColors.creamDark,
+        foregroundColor: AppColors.cream,
+        disabledForegroundColor: AppColors.textSecondary,
+        minimumSize: const Size(48, 48),
+      ),
+    );
+  }
+}
