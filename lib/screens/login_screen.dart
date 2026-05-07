@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -5,10 +6,12 @@ import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
+import '../utils/route_transitions.dart';
+import 'home_screen.dart';
+import 'location_setup_screen.dart';
+import 'user_details_screen.dart';
 
 enum _AuthMode { choose, login, signup }
-
-enum _SignupMethod { email, phone }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,86 +21,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _otpController = TextEditingController();
-  final _nameController = TextEditingController();
+  final _loginFormKey = GlobalKey<FormState>();
+  final _signupFormKey = GlobalKey<FormState>();
+  final _loginIdentifierController = TextEditingController();
+  final _loginPasswordController = TextEditingController();
+  final _signupNameController = TextEditingController();
+  final _signupEmailController = TextEditingController();
   final _signupPasswordController = TextEditingController();
+  final _signupConfirmPasswordController = TextEditingController();
 
   _AuthMode _mode = _AuthMode.choose;
-  _SignupMethod _signupMethod = _SignupMethod.email;
-  String _selectedGender = 'Male';
   bool _isLoading = false;
-  bool _otpRequested = false;
   String? _error;
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _otpController.dispose();
-    _nameController.dispose();
+    _loginIdentifierController.dispose();
+    _loginPasswordController.dispose();
+    _signupNameController.dispose();
+    _signupEmailController.dispose();
     _signupPasswordController.dispose();
+    _signupConfirmPasswordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    final auth = context.read<AuthProvider>();
-    try {
-      if (_mode == _AuthMode.login) {
-        final username = _usernameController.text.trim();
-        final email = username.contains('@')
-            ? username
-            : '$username@foodiefinder.app';
-        await auth.loginWithEmailPassword(
-          email: email,
-          password: _passwordController.text,
-        );
-      } else {
-        if (_signupMethod == _SignupMethod.email) {
-          await auth.loginWithEmailPassword(
-            email: _emailController.text.trim(),
-            password: _signupPasswordController.text,
-          );
-          await auth.setSignupProfile(
-            name: _nameController.text.trim(),
-            gender: _selectedGender,
-          );
-        } else {
-          if (!_otpRequested) {
-            await auth.sendPhoneOtp(_phoneController.text.trim());
-            setState(() => _otpRequested = true);
-            return;
-          }
-          await auth.verifyPhoneOtp(
-            phoneNumber: _phoneController.text.trim(),
-            smsCode: _otpController.text.trim(),
-          );
-          await auth.setSignupProfile(
-            name: _nameController.text.trim(),
-            gender: _selectedGender,
-          );
-        }
-      }
-
-      if (!mounted) return;
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } catch (e) {
-      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
   }
 
   Future<void> _continueWithGoogle() async {
@@ -108,15 +53,96 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await context.read<AuthProvider>().loginWithGoogle();
-      if (!mounted) return;
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      await _openNextStep();
     } catch (e) {
-      if (mounted) {
-        setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
-      }
+      if (!mounted) return;
+      setState(() => _error = _formatError(e));
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  Future<void> _login() async {
+    if (!(_loginFormKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await context.read<AuthProvider>().loginWithEmailPassword(
+        identifier: _loginIdentifierController.text.trim(),
+        password: _loginPasswordController.text.trim(),
+      );
+      await _openNextStep();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _formatError(e));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _signup() async {
+    if (!(_signupFormKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await context.read<AuthProvider>().signupWithEmailPassword(
+        name: _signupNameController.text.trim(),
+        email: _signupEmailController.text.trim(),
+        password: _signupPasswordController.text.trim(),
+      );
+      await _openNextStep();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _formatError(e));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  String _formatError(Object error) {
+    if (error is FirebaseAuthException) {
+      return error.message ?? 'Unable to continue right now.';
+    }
+    return error.toString().replaceFirst('Exception: ', '');
+  }
+
+  void _setMode(_AuthMode mode) {
+    setState(() {
+      _mode = mode;
+      _error = null;
+    });
+  }
+
+  Future<void> _openNextStep() async {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn) return;
+
+    Widget nextPage;
+    if (!auth.hasBasicDetails) {
+      nextPage = const UserDetailsScreen();
+    } else if (!auth.hasLocationDetails) {
+      nextPage = const LocationSetupScreen();
+    } else {
+      nextPage = const HomeScreen();
+    }
+
+    await Navigator.of(context).pushAndRemoveUntil(
+      fadeRoute(page: nextPage),
+      (_) => false,
+    );
   }
 
   @override
@@ -131,253 +157,234 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 460),
+                child: Card(
+                  child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: AppColors.ink,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          'Foodie Finder',
-                          style: AppTextStyles.h2.copyWith(
-                            color: AppColors.cream,
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          decoration: BoxDecoration(
+                            color: AppColors.ink,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Foodie Finder',
+                                style: AppTextStyles.h2.copyWith(
+                                  color: AppColors.cream,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                'Choose how you want to continue',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.creamDark,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          'Login or signup to continue',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.creamDark,
+                        const SizedBox(height: AppSpacing.lg),
+                        if (_mode == _AuthMode.choose) ...[
+                          OutlinedButton.icon(
+                            onPressed: _isLoading ? null : _continueWithGoogle,
+                            icon: const Icon(Icons.g_mobiledata_rounded),
+                            label: const Text('Continue with Google'),
                           ),
-                        ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: _isLoading
+                                ? null
+                                : () => _setMode(_AuthMode.login),
+                            icon: const Icon(Icons.email_rounded),
+                            label: const Text('Continue with Email'),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: _isLoading
+                                ? null
+                                : () => _setMode(_AuthMode.signup),
+                            icon: const Icon(Icons.person_add_alt_1_rounded),
+                            label: const Text('Sign up'),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            'Google will show the accounts available on this phone.',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ] else ...[
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => _setMode(_AuthMode.choose),
+                              icon: const Icon(Icons.arrow_back_rounded),
+                              label: const Text('Back'),
+                            ),
+                          ),
+                          if (_mode == _AuthMode.login) ...[
+                            Text('Login', style: AppTextStyles.h3),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Old users can log in with email or the saved name plus password.',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            Form(
+                              key: _loginFormKey,
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    controller: _loginIdentifierController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Email or name',
+                                      prefixIcon: Icon(Icons.person_rounded),
+                                    ),
+                                    validator: (value) =>
+                                        (value == null || value.trim().isEmpty)
+                                        ? 'Enter email or name'
+                                        : null,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _loginPasswordController,
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Password',
+                                      prefixIcon: Icon(Icons.lock_rounded),
+                                    ),
+                                    validator: (value) {
+                                      if ((value?.trim().length ?? 0) < 6) {
+                                        return 'Enter at least 6 characters';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: AppSpacing.lg),
+                                  ElevatedButton(
+                                    onPressed: _isLoading ? null : _login,
+                                    child: const Text('Login'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ] else ...[
+                            Text('Sign up', style: AppTextStyles.h3),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Create a new account with name, email, and password.',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            Form(
+                              key: _signupFormKey,
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    controller: _signupNameController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Name',
+                                      prefixIcon: Icon(Icons.person_rounded),
+                                    ),
+                                    validator: (value) =>
+                                        (value == null || value.trim().isEmpty)
+                                        ? 'Enter your name'
+                                        : null,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _signupEmailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Email',
+                                      prefixIcon: Icon(Icons.email_rounded),
+                                    ),
+                                    validator: (value) {
+                                      final text = value?.trim() ?? '';
+                                      if (text.isEmpty || !text.contains('@')) {
+                                        return 'Enter a valid email';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _signupPasswordController,
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Password',
+                                      prefixIcon: Icon(Icons.lock_rounded),
+                                    ),
+                                    validator: (value) {
+                                      if ((value?.trim().length ?? 0) < 6) {
+                                        return 'Enter at least 6 characters';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller:
+                                        _signupConfirmPasswordController,
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Confirm password',
+                                      prefixIcon: Icon(Icons.lock_rounded),
+                                    ),
+                                    validator: (value) {
+                                      if (value?.trim() !=
+                                          _signupPasswordController.text
+                                              .trim()) {
+                                        return 'Passwords do not match';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: AppSpacing.lg),
+                                  ElevatedButton(
+                                    onPressed: _isLoading ? null : _signup,
+                                    child: const Text('Create account'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                        if (_error != null) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            _error!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.red.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                        if (_isLoading) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          const Center(child: CircularProgressIndicator()),
+                        ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (_mode == _AuthMode.choose) ...[
-                            const SizedBox(height: 20),
-                            OutlinedButton.icon(
-                              onPressed: _isLoading
-                                  ? null
-                                  : _continueWithGoogle,
-                              icon: const Icon(Icons.g_mobiledata_rounded),
-                              label: const Text('Continue with Google'),
-                            ),
-                            const SizedBox(height: 12),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  setState(() => _mode = _AuthMode.login),
-                              child: const Text('Login'),
-                            ),
-                            const SizedBox(height: 12),
-                            OutlinedButton(
-                              onPressed: () =>
-                                  setState(() => _mode = _AuthMode.signup),
-                              child: const Text('Signup'),
-                            ),
-                            if (_error != null) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                _error!,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ] else ...[
-                            TextButton(
-                              onPressed: () => setState(() {
-                                _mode = _AuthMode.choose;
-                                _otpRequested = false;
-                                _error = null;
-                              }),
-                              child: const Text('Back'),
-                            ),
-                            if (_mode == _AuthMode.login) ...[
-                              TextFormField(
-                                controller: _usernameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Username',
-                                ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Enter username'
-                                    : null,
-                              ),
-                              const SizedBox(height: 12),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Password',
-                                ),
-                                validator: (v) => (v == null || v.length < 6)
-                                    ? 'Min 6 chars password'
-                                    : null,
-                              ),
-                            ] else ...[
-                              TextFormField(
-                                controller: _nameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Name',
-                                ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Enter name'
-                                    : null,
-                              ),
-                              const SizedBox(height: 12),
-                              DropdownButtonFormField<String>(
-                                initialValue: _selectedGender,
-                                decoration: const InputDecoration(
-                                  labelText: 'Gender',
-                                ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'Male',
-                                    child: Text('Male'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Female',
-                                    child: Text('Female'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Other',
-                                    child: Text('Other'),
-                                  ),
-                                ],
-                                onChanged: (v) => setState(
-                                  () => _selectedGender = v ?? 'Male',
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              SegmentedButton<_SignupMethod>(
-                                segments: const [
-                                  ButtonSegment(
-                                    value: _SignupMethod.email,
-                                    label: Text('Email'),
-                                    icon: Icon(Icons.email_rounded),
-                                  ),
-                                  ButtonSegment(
-                                    value: _SignupMethod.phone,
-                                    label: Text('Phone'),
-                                    icon: Icon(Icons.phone_rounded),
-                                  ),
-                                ],
-                                selected: {_signupMethod},
-                                onSelectionChanged: (selection) => setState(() {
-                                  _signupMethod = selection.first;
-                                  _otpRequested = false;
-                                }),
-                              ),
-                              if (_signupMethod == _SignupMethod.email) ...[
-                                TextFormField(
-                                  controller: _emailController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Email',
-                                  ),
-                                  validator: (v) =>
-                                      (v == null || !v.contains('@'))
-                                      ? 'Enter valid email'
-                                      : null,
-                                ),
-                                const SizedBox(height: 12),
-                                TextFormField(
-                                  controller: _signupPasswordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Password',
-                                  ),
-                                  validator: (v) => (v == null || v.length < 6)
-                                      ? 'Min 6 chars password'
-                                      : null,
-                                ),
-                              ] else ...[
-                                TextFormField(
-                                  controller: _phoneController,
-                                  keyboardType: TextInputType.phone,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Phone Number',
-                                  ),
-                                  validator: (v) =>
-                                      (v == null || v.trim().length < 10)
-                                      ? 'Enter valid phone number'
-                                      : null,
-                                ),
-                                const SizedBox(height: 12),
-                                TextFormField(
-                                  controller: _signupPasswordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Password',
-                                  ),
-                                  validator: (v) => (v == null || v.length < 6)
-                                      ? 'Min 6 chars password'
-                                      : null,
-                                ),
-                                if (_otpRequested) ...[
-                                  const SizedBox(height: 12),
-                                  TextFormField(
-                                    controller: _otpController,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: 'OTP',
-                                    ),
-                                    validator: (v) =>
-                                        (!_otpRequested ||
-                                            (v != null && v.trim().length >= 6))
-                                        ? null
-                                        : 'Enter valid OTP',
-                                  ),
-                                ],
-                              ],
-                            ],
-                            const SizedBox(height: 16),
-                            OutlinedButton.icon(
-                              onPressed: _isLoading
-                                  ? null
-                                  : _continueWithGoogle,
-                              icon: const Icon(Icons.g_mobiledata_rounded),
-                              label: const Text('Continue with Google'),
-                            ),
-                            const SizedBox(height: 12),
-                            ElevatedButton(
-                              onPressed: _isLoading ? null : _submit,
-                              child: Text(
-                                _mode == _AuthMode.login
-                                    ? 'Login'
-                                    : (_signupMethod == _SignupMethod.phone &&
-                                          !_otpRequested)
-                                    ? 'Send OTP'
-                                    : 'Continue',
-                              ),
-                            ),
-                            if (_error != null) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                _error!,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
