@@ -14,7 +14,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Pizza Palace',
       location: 'Downtown',
       rating: 4.5,
-      imageUrl: 'https://picsum.photos/300/200?random=1',
+      imageUrl: 'https://loremflickr.com/600/400/margherita,pizza',
       category: 'Veg',
     ),
     Dish(
@@ -27,7 +27,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Burger Joint',
       location: 'Uptown',
       rating: 4.2,
-      imageUrl: 'https://picsum.photos/300/200?random=2',
+      imageUrl: 'https://loremflickr.com/600/400/chicken,burger',
       category: 'Non-Veg',
     ),
     Dish(
@@ -40,7 +40,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Green Eats',
       location: 'Midtown',
       rating: 4.8,
-      imageUrl: 'https://picsum.photos/300/200?random=3',
+      imageUrl: 'https://loremflickr.com/600/400/vegan,salad,avocado',
       category: 'Vegan',
     ),
     Dish(
@@ -53,7 +53,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Indian Spice',
       location: 'East Side',
       rating: 4.7,
-      imageUrl: 'https://picsum.photos/300/200?random=4',
+      imageUrl: 'https://loremflickr.com/600/400/paneer,tikka',
       category: 'Veg',
     ),
     Dish(
@@ -66,7 +66,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Steak House',
       location: 'West End',
       rating: 4.9,
-      imageUrl: 'https://picsum.photos/300/200?random=5',
+      imageUrl: 'https://loremflickr.com/600/400/beef,steak',
       category: 'Non-Veg',
     ),
     Dish(
@@ -79,7 +79,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Healthy Bites',
       location: 'North Park',
       rating: 4.6,
-      imageUrl: 'https://picsum.photos/300/200?random=6',
+      imageUrl: 'https://loremflickr.com/600/400/quinoa,bowl',
       category: 'Vegan',
     ),
     Dish(
@@ -92,7 +92,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Asian Fusion',
       location: 'South Gate',
       rating: 4.3,
-      imageUrl: 'https://picsum.photos/300/200?random=7',
+      imageUrl: 'https://loremflickr.com/600/400/vegetable,stir-fry',
       category: 'Veg',
     ),
     Dish(
@@ -105,7 +105,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Seafood Delight',
       location: 'Harbor View',
       rating: 4.8,
-      imageUrl: 'https://picsum.photos/300/200?random=8',
+      imageUrl: 'https://loremflickr.com/600/400/grilled,salmon',
       category: 'Non-Veg',
     ),
     Dish(
@@ -118,7 +118,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Breakfast Club',
       location: 'City Center',
       rating: 4.4,
-      imageUrl: 'https://picsum.photos/300/200?random=9',
+      imageUrl: 'https://loremflickr.com/600/400/avocado,toast',
       category: 'Vegan',
     ),
     Dish(
@@ -131,7 +131,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Curry House',
       location: 'Old Town',
       rating: 4.6,
-      imageUrl: 'https://picsum.photos/300/200?random=10',
+      imageUrl: 'https://loremflickr.com/600/400/chicken,curry',
       category: 'Non-Veg',
     ),
     Dish(
@@ -144,7 +144,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Punjabi Zaika',
       location: 'Sector 14',
       rating: 4.5,
-      imageUrl: 'https://picsum.photos/300/200?random=11',
+      imageUrl: 'https://loremflickr.com/600/400/chole,bhature',
       category: 'Veg',
     ),
     Dish(
@@ -157,7 +157,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Punjab Grill',
       location: 'Central Market',
       rating: 4.7,
-      imageUrl: 'https://picsum.photos/300/200?random=12',
+      imageUrl: 'https://loremflickr.com/600/400/dal,makhani',
       category: 'Veg',
     ),
     Dish(
@@ -170,7 +170,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Royal Tandoor',
       location: 'MG Road',
       rating: 4.8,
-      imageUrl: 'https://picsum.photos/300/200?random=13',
+      imageUrl: 'https://loremflickr.com/600/400/paneer,butter,masala',
       category: 'Veg',
     ),
     Dish(
@@ -183,7 +183,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Ghar Ka Khana',
       location: 'Lake View',
       rating: 4.4,
-      imageUrl: 'https://picsum.photos/300/200?random=14',
+      imageUrl: 'https://loremflickr.com/600/400/rajma,chawal',
       category: 'Veg',
     ),
     Dish(
@@ -196,7 +196,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Udupi Sagar',
       location: 'South Avenue',
       rating: 4.6,
-      imageUrl: 'https://picsum.photos/300/200?random=15',
+      imageUrl: 'https://loremflickr.com/600/400/masala,dosa',
       category: 'Veg',
     ),
     Dish(
@@ -209,7 +209,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Madras Cafe',
       location: 'Green Park',
       rating: 4.3,
-      imageUrl: 'https://picsum.photos/300/200?random=16',
+      imageUrl: 'https://loremflickr.com/600/400/idli,sambar',
       category: 'Veg',
     ),
     Dish(
@@ -222,7 +222,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Biryani Blues',
       location: 'Ring Road',
       rating: 4.5,
-      imageUrl: 'https://picsum.photos/300/200?random=17',
+      imageUrl: 'https://loremflickr.com/600/400/vegetable,biryani',
       category: 'Veg',
     ),
     Dish(
@@ -235,7 +235,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Paratha Point',
       location: 'Model Town',
       rating: 4.2,
-      imageUrl: 'https://picsum.photos/300/200?random=18',
+      imageUrl: 'https://loremflickr.com/600/400/aloo,paratha',
       category: 'Veg',
     ),
     Dish(
@@ -248,7 +248,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Green Spice',
       location: 'Civil Lines',
       rating: 4.6,
-      imageUrl: 'https://picsum.photos/300/200?random=19',
+      imageUrl: 'https://loremflickr.com/600/400/palak,paneer',
       category: 'Veg',
     ),
     Dish(
@@ -261,7 +261,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Veggie Delight',
       location: 'Nehru Place',
       rating: 4.4,
-      imageUrl: 'https://picsum.photos/300/200?random=20',
+      imageUrl: 'https://loremflickr.com/600/400/mushroom,curry',
       category: 'Vegan',
     ),
     Dish(
@@ -274,7 +274,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Mughlai Darbar',
       location: 'Connaught Place',
       rating: 4.8,
-      imageUrl: 'https://picsum.photos/300/200?random=21',
+      imageUrl: 'https://loremflickr.com/600/400/butter,chicken',
       category: 'Non-Veg',
     ),
     Dish(
@@ -287,7 +287,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Nawabi Handi',
       location: 'Old Delhi',
       rating: 4.7,
-      imageUrl: 'https://picsum.photos/300/200?random=22',
+      imageUrl: 'https://loremflickr.com/600/400/chicken,biryani',
       category: 'Non-Veg',
     ),
     Dish(
@@ -300,7 +300,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Kashmir Kitchen',
       location: 'Mall Road',
       rating: 4.7,
-      imageUrl: 'https://picsum.photos/300/200?random=23',
+      imageUrl: 'https://loremflickr.com/600/400/rogan,josh',
       category: 'Non-Veg',
     ),
     Dish(
@@ -313,7 +313,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Coastal Pot',
       location: 'Harbor Street',
       rating: 4.5,
-      imageUrl: 'https://picsum.photos/300/200?random=24',
+      imageUrl: 'https://loremflickr.com/600/400/fish,curry,rice',
       category: 'Non-Veg',
     ),
     Dish(
@@ -326,7 +326,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Desi Rasoi',
       location: 'Station Road',
       rating: 4.3,
-      imageUrl: 'https://picsum.photos/300/200?random=25',
+      imageUrl: 'https://loremflickr.com/600/400/egg,curry',
       category: 'Non-Veg',
     ),
     Dish(
@@ -339,7 +339,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Tandoori Nights',
       location: 'Khan Market',
       rating: 4.6,
-      imageUrl: 'https://picsum.photos/300/200?random=26',
+      imageUrl: 'https://loremflickr.com/600/400/chicken,tikka',
       category: 'Non-Veg',
     ),
     Dish(
@@ -352,7 +352,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Sea Breeze',
       location: 'Marine Drive',
       rating: 4.6,
-      imageUrl: 'https://picsum.photos/300/200?random=27',
+      imageUrl: 'https://loremflickr.com/600/400/prawn,masala',
       category: 'Non-Veg',
     ),
     Dish(
@@ -365,7 +365,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Bombay Bites',
       location: 'Linking Road',
       rating: 4.4,
-      imageUrl: 'https://picsum.photos/300/200?random=28',
+      imageUrl: 'https://loremflickr.com/600/400/keema,pav',
       category: 'Non-Veg',
     ),
     Dish(
@@ -378,7 +378,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Village Tadka',
       location: 'Heritage Lane',
       rating: 4.3,
-      imageUrl: 'https://picsum.photos/300/200?random=29',
+      imageUrl: 'https://loremflickr.com/600/400/baingan,bharta',
       category: 'Vegan',
     ),
     Dish(
@@ -391,7 +391,7 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Annapurna Meals',
       location: 'Temple Road',
       rating: 4.2,
-      imageUrl: 'https://picsum.photos/300/200?random=30',
+      imageUrl: 'https://loremflickr.com/600/400/veg,pulao',
       category: 'Vegan',
     ),
   ];

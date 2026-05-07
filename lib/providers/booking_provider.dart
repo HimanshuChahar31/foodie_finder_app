@@ -11,6 +11,7 @@ class BookingRecord {
   final int seatCount;
   final double amount;
   final DateTime bookedAt;
+  final DateTime scheduledAt;
 
   const BookingRecord({
     required this.userName,
@@ -20,6 +21,7 @@ class BookingRecord {
     required this.seatCount,
     required this.amount,
     required this.bookedAt,
+    required this.scheduledAt,
   });
 }
 
@@ -74,6 +76,10 @@ class BookingProvider extends ChangeNotifier {
             amount: (data['amount'] as num?)?.toDouble() ?? 0,
             bookedAt:
                 (data['bookedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            scheduledAt:
+                (data['scheduledAt'] as Timestamp?)?.toDate() ??
+                (data['bookedAt'] as Timestamp?)?.toDate() ??
+                DateTime.now(),
           );
         }),
       );
@@ -92,6 +98,7 @@ class BookingProvider extends ChangeNotifier {
       'seatCount': booking.seatCount,
       'amount': booking.amount,
       'bookedAt': Timestamp.fromDate(booking.bookedAt),
+      'scheduledAt': Timestamp.fromDate(booking.scheduledAt),
     });
   }
 }

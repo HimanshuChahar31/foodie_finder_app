@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../firebase/firebase_bootstrap.dart';
 
 class AuthProvider extends ChangeNotifier {
   FirebaseAuth? _auth;
   FirebaseFirestore? _firestore;
+  bool _googleSignInReady = false;
   bool _isLoggedIn = false;
   String? _email;
   String? _phone;
@@ -39,11 +41,24 @@ class AuthProvider extends ChangeNotifier {
       _auth!.authStateChanges().listen((user) async {
         _isLoggedIn = user != null;
         if (user != null) {
+          _applyFirebaseUser(user);
           await _loadProfileFromFirestore();
         }
         notifyListeners();
       });
     }
+  }
+
+  Future<void> _ensureGoogleSignInReady() async {
+    if (_googleSignInReady) return;
+    await GoogleSignIn.instance.initialize();
+    _googleSignInReady = true;
+  }
+
+  void _applyFirebaseUser(User user) {
+    _email ??= user.email;
+    _phone ??= user.phoneNumber;
+    _name ??= user.displayName;
   }
 
   Future<void> _ensureSignedIn() async {
@@ -138,6 +153,41 @@ class AuthProvider extends ChangeNotifier {
 
     _email = email;
     _phone = null;
+    final user = _auth?.currentUser;
+    if (user != null) _applyFirebaseUser(user);
+    await _saveProfileToFirestore();
+    await _loadProfileFromFirestore();
+    notifyListeners();
+  }
+
+  Future<void> loginWithGoogle() async {
+    if (!FirebaseBootstrap.isInitialized) {
+      throw Exception('Firebase is not initialized.');
+    }
+
+    _auth ??= FirebaseAuth.instance;
+    await _ensureGoogleSignInReady();
+
+    if (!GoogleSignIn.instance.supportsAuthenticate()) {
+      throw Exception('Google sign-in is not supported on this platform.');
+    }
+
+    final googleUser = await GoogleSignIn.instance.authenticate();
+    final googleAuth = googleUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      idToken: googleAuth.idToken,
+    );
+    final userCredential = await _auth!.signInWithCredential(credential);
+    final user = userCredential.user;
+
+    if (user == null) {
+      throw Exception('Google sign-in did not return a user.');
+    }
+
+    _isLoggedIn = true;
+    _email = user.email ?? googleUser.email;
+    _phone = user.phoneNumber;
+    _name ??= user.displayName ?? googleUser.displayName;
     await _saveProfileToFirestore();
     await _loadProfileFromFirestore();
     notifyListeners();
@@ -273,6 +323,9 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _logout() async {
     if (FirebaseBootstrap.isInitialized) {
       _auth ??= FirebaseAuth.instance;
+      if (_googleSignInReady) {
+        await GoogleSignIn.instance.signOut();
+      }
       await _auth!.signOut();
     }
     _isLoggedIn = false;

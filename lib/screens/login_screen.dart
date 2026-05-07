@@ -7,6 +7,7 @@ import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
 
 enum _AuthMode { choose, login, signup }
+
 enum _SignupMethod { email, phone }
 
 class LoginScreen extends StatefulWidget {
@@ -56,8 +57,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       if (_mode == _AuthMode.login) {
         final username = _usernameController.text.trim();
-        final email = username.contains('@') ? username : '$username@foodiefinder.app';
-        await auth.loginWithEmailPassword(email: email, password: _passwordController.text);
+        final email = username.contains('@')
+            ? username
+            : '$username@foodiefinder.app';
+        await auth.loginWithEmailPassword(
+          email: email,
+          password: _passwordController.text,
+        );
       } else {
         if (_signupMethod == _SignupMethod.email) {
           await auth.loginWithEmailPassword(
@@ -94,6 +100,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _continueWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await context.read<AuthProvider>().loginWithGoogle();
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,7 +148,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Text(
                           'Foodie Finder',
-                          style: AppTextStyles.h2.copyWith(color: AppColors.cream),
+                          style: AppTextStyles.h2.copyWith(
+                            color: AppColors.cream,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
@@ -142,131 +169,210 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                if (_mode == _AuthMode.choose) ...[
-                  const SizedBox(height: 20),
-                  ElevatedButton(onPressed: () => setState(() => _mode = _AuthMode.login), child: const Text('Login')),
-                  const SizedBox(height: 12),
-                  OutlinedButton(onPressed: () => setState(() => _mode = _AuthMode.signup), child: const Text('Signup')),
-                ] else ...[
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _mode = _AuthMode.choose;
-                      _otpRequested = false;
-                      _error = null;
-                    }),
-                    child: const Text('Back'),
-                  ),
-                  if (_mode == _AuthMode.login) ...[
-                    TextFormField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(labelText: 'Username'),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter username' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'Password'),
-                      validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars password' : null,
-                    ),
-                  ] else ...[
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Name'),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter name' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedGender,
-                      decoration: const InputDecoration(labelText: 'Gender'),
-                      items: const [
-                        DropdownMenuItem(value: 'Male', child: Text('Male')),
-                        DropdownMenuItem(value: 'Female', child: Text('Female')),
-                        DropdownMenuItem(value: 'Other', child: Text('Other')),
-                      ],
-                      onChanged: (v) => setState(() => _selectedGender = v ?? 'Male'),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: RadioListTile<_SignupMethod>(
-                            value: _SignupMethod.email,
-                            groupValue: _signupMethod,
-                            title: const Text('Email'),
-                            onChanged: (v) => setState(() {
-                              _signupMethod = v!;
-                              _otpRequested = false;
-                            }),
-                          ),
-                        ),
-                        Expanded(
-                          child: RadioListTile<_SignupMethod>(
-                            value: _SignupMethod.phone,
-                            groupValue: _signupMethod,
-                            title: const Text('Phone'),
-                            onChanged: (v) => setState(() {
-                              _signupMethod = v!;
-                              _otpRequested = false;
-                            }),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_signupMethod == _SignupMethod.email) ...[
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(labelText: 'Email'),
-                        validator: (v) => (v == null || !v.contains('@')) ? 'Enter valid email' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _signupPasswordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
-                        validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars password' : null,
-                      ),
-                    ] else ...[
-                      TextFormField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(labelText: 'Phone Number'),
-                        validator: (v) => (v == null || v.trim().length < 10) ? 'Enter valid phone number' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _signupPasswordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
-                        validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars password' : null,
-                      ),
-                      if (_otpRequested) ...[
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _otpController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'OTP'),
-                          validator: (v) => (!_otpRequested || (v != null && v.trim().length >= 6)) ? null : 'Enter valid OTP',
-                        ),
-                      ],
-                    ],
-                  ],
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    child: Text(
-                      _mode == _AuthMode.login
-                          ? 'Login'
-                          : (_signupMethod == _SignupMethod.phone && !_otpRequested)
-                              ? 'Send OTP'
-                              : 'Continue',
-                    ),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 8),
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
-                  ],
-                ],
+                          if (_mode == _AuthMode.choose) ...[
+                            const SizedBox(height: 20),
+                            OutlinedButton.icon(
+                              onPressed: _isLoading
+                                  ? null
+                                  : _continueWithGoogle,
+                              icon: const Icon(Icons.g_mobiledata_rounded),
+                              label: const Text('Continue with Google'),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () =>
+                                  setState(() => _mode = _AuthMode.login),
+                              child: const Text('Login'),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton(
+                              onPressed: () =>
+                                  setState(() => _mode = _AuthMode.signup),
+                              child: const Text('Signup'),
+                            ),
+                            if (_error != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                _error!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ] else ...[
+                            TextButton(
+                              onPressed: () => setState(() {
+                                _mode = _AuthMode.choose;
+                                _otpRequested = false;
+                                _error = null;
+                              }),
+                              child: const Text('Back'),
+                            ),
+                            if (_mode == _AuthMode.login) ...[
+                              TextFormField(
+                                controller: _usernameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Username',
+                                ),
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                    ? 'Enter username'
+                                    : null,
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Password',
+                                ),
+                                validator: (v) => (v == null || v.length < 6)
+                                    ? 'Min 6 chars password'
+                                    : null,
+                              ),
+                            ] else ...[
+                              TextFormField(
+                                controller: _nameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Name',
+                                ),
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                    ? 'Enter name'
+                                    : null,
+                              ),
+                              const SizedBox(height: 12),
+                              DropdownButtonFormField<String>(
+                                initialValue: _selectedGender,
+                                decoration: const InputDecoration(
+                                  labelText: 'Gender',
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'Male',
+                                    child: Text('Male'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Female',
+                                    child: Text('Female'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Other',
+                                    child: Text('Other'),
+                                  ),
+                                ],
+                                onChanged: (v) => setState(
+                                  () => _selectedGender = v ?? 'Male',
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SegmentedButton<_SignupMethod>(
+                                segments: const [
+                                  ButtonSegment(
+                                    value: _SignupMethod.email,
+                                    label: Text('Email'),
+                                    icon: Icon(Icons.email_rounded),
+                                  ),
+                                  ButtonSegment(
+                                    value: _SignupMethod.phone,
+                                    label: Text('Phone'),
+                                    icon: Icon(Icons.phone_rounded),
+                                  ),
+                                ],
+                                selected: {_signupMethod},
+                                onSelectionChanged: (selection) => setState(() {
+                                  _signupMethod = selection.first;
+                                  _otpRequested = false;
+                                }),
+                              ),
+                              if (_signupMethod == _SignupMethod.email) ...[
+                                TextFormField(
+                                  controller: _emailController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Email',
+                                  ),
+                                  validator: (v) =>
+                                      (v == null || !v.contains('@'))
+                                      ? 'Enter valid email'
+                                      : null,
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _signupPasswordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Password',
+                                  ),
+                                  validator: (v) => (v == null || v.length < 6)
+                                      ? 'Min 6 chars password'
+                                      : null,
+                                ),
+                              ] else ...[
+                                TextFormField(
+                                  controller: _phoneController,
+                                  keyboardType: TextInputType.phone,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Phone Number',
+                                  ),
+                                  validator: (v) =>
+                                      (v == null || v.trim().length < 10)
+                                      ? 'Enter valid phone number'
+                                      : null,
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _signupPasswordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Password',
+                                  ),
+                                  validator: (v) => (v == null || v.length < 6)
+                                      ? 'Min 6 chars password'
+                                      : null,
+                                ),
+                                if (_otpRequested) ...[
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _otpController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'OTP',
+                                    ),
+                                    validator: (v) =>
+                                        (!_otpRequested ||
+                                            (v != null && v.trim().length >= 6))
+                                        ? null
+                                        : 'Enter valid OTP',
+                                  ),
+                                ],
+                              ],
+                            ],
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: _isLoading
+                                  ? null
+                                  : _continueWithGoogle,
+                              icon: const Icon(Icons.g_mobiledata_rounded),
+                              label: const Text('Continue with Google'),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              child: Text(
+                                _mode == _AuthMode.login
+                                    ? 'Login'
+                                    : (_signupMethod == _SignupMethod.phone &&
+                                          !_otpRequested)
+                                    ? 'Send OTP'
+                                    : 'Continue',
+                              ),
+                            ),
+                            if (_error != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                _error!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ],
                         ],
                       ),
                     ),

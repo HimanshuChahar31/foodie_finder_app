@@ -228,6 +228,12 @@ class BookingHistoryScreen extends StatelessWidget {
                               color: AppColors.textSecondary,
                             ),
                           ),
+                          Text(
+                            'Slot: ${booking.scheduledAt.day}/${booking.scheduledAt.month}/${booking.scheduledAt.year} ${TimeOfDay.fromDateTime(booking.scheduledAt).format(context)}',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                           const SizedBox(height: AppSpacing.sm),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

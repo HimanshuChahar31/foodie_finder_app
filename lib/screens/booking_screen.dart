@@ -22,7 +22,8 @@ class _BookingScreenState extends State<BookingScreen> {
       rating: 4.8,
       distance: 1.2,
       pricePerSeat: 899,
-      imageUrl: 'https://picsum.photos/500/320?random=31',
+      imageUrl:
+          'https://loremflickr.com/900/600/north-indian,restaurant,interior',
       cuisine: 'North Indian - Family Dining',
       description:
           'Warm tandoor plates, soft lighting, and roomy tables for relaxed dinner plans.',
@@ -33,7 +34,7 @@ class _BookingScreenState extends State<BookingScreen> {
       rating: 4.6,
       distance: 2.4,
       pricePerSeat: 699,
-      imageUrl: 'https://picsum.photos/500/320?random=32',
+      imageUrl: 'https://loremflickr.com/900/600/indian,street-food,restaurant',
       cuisine: 'Street Food - Casual',
       description:
           'Fast service, bold chaats, and a lively dining room close to the city center.',
@@ -44,7 +45,7 @@ class _BookingScreenState extends State<BookingScreen> {
       rating: 4.7,
       distance: 3.1,
       pricePerSeat: 799,
-      imageUrl: 'https://picsum.photos/500/320?random=33',
+      imageUrl: 'https://loremflickr.com/900/600/vegan,restaurant,interior',
       cuisine: 'Vegan - Healthy',
       description:
           'Fresh bowls, quiet seating, and bright interiors for lighter group meals.',
@@ -55,7 +56,7 @@ class _BookingScreenState extends State<BookingScreen> {
       rating: 4.5,
       distance: 4.0,
       pricePerSeat: 1199,
-      imageUrl: 'https://picsum.photos/500/320?random=34',
+      imageUrl: 'https://loremflickr.com/900/600/grill,restaurant,interior',
       cuisine: 'Grill - Continental',
       description:
           'Comfortable booth seating with grilled specials and a polished evening vibe.',
@@ -64,6 +65,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Restaurant _selectedHotel = _hotels.first;
   int _seatCount = 2;
+  DateTime _selectedDateTime = DateTime.now().add(const Duration(hours: 2));
 
   double get _totalCost => _selectedHotel.pricePerSeat * _seatCount;
 
@@ -94,17 +96,43 @@ class _BookingScreenState extends State<BookingScreen> {
         seatCount: _seatCount,
         amount: _totalCost,
         bookedAt: DateTime.now(),
+        scheduledAt: _selectedDateTime,
       ),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Booked $_seatCount seats at ${_selectedHotel.name} for Rs. ${_totalCost.toStringAsFixed(0)}',
+          'Booked $_seatCount seats on ${_selectedDateTime.day}/${_selectedDateTime.month} at ${TimeOfDay.fromDateTime(_selectedDateTime).format(context)} for Rs. ${_totalCost.toStringAsFixed(0)}',
         ),
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  Future<void> _pickDateTime() async {
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime.isAfter(now) ? _selectedDateTime : now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 90)),
+    );
+    if (pickedDate == null || !mounted) return;
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+    );
+    if (pickedTime == null) return;
+    setState(() {
+      _selectedDateTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+    });
   }
 
   @override
@@ -250,6 +278,20 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.schedule_rounded),
+                title: const Text('Booking Date & Time'),
+                subtitle: Text(
+                  '${_selectedDateTime.day}/${_selectedDateTime.month}/${_selectedDateTime.year} • ${TimeOfDay.fromDateTime(_selectedDateTime).format(context)}',
+                ),
+                trailing: TextButton(
+                  onPressed: _pickDateTime,
+                  child: const Text('Change'),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
             Text(
               'Available Hotels',
               style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
