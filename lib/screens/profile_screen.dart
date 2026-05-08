@@ -8,6 +8,8 @@ import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
 import '../widgets/profile_option_tile.dart';
 import 'login_screen.dart';
+import 'location_setup_screen.dart';
+import 'support_chat_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -287,11 +289,20 @@ class CartScreen extends StatelessWidget {
                   border: Border(top: BorderSide(color: AppColors.creamDark)),
                 ),
                 child: ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
+                    final locationSaved = await Navigator.of(context).push<bool>(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const LocationSetupScreen(forOrderPlacement: true),
+                      ),
+                    );
+                    if (locationSaved != true || !context.mounted) return;
                     cart.placeOrder();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Order placed successfully'),
+                        content: Text(
+                          'Location saved and order placed successfully',
+                        ),
                       ),
                     );
                   },
@@ -561,14 +572,7 @@ class HelpSupportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _InfoScreen(
-      title: 'Help & Support',
-      children: const [
-        'For order or cart issues, check your cart and order history first.',
-        'For booking support, select the hotel again and confirm seat count before booking.',
-        'Contact support: foodie.finder.help@example.com',
-      ],
-    );
+    return const SupportChatScreen();
   }
 }
 

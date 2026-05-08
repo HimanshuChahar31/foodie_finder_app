@@ -9,10 +9,14 @@ import '../utils/google_geocoding_service.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
 import '../utils/route_transitions.dart';
-import 'home_screen.dart';
 
 class LocationSetupScreen extends StatelessWidget {
-  const LocationSetupScreen({super.key});
+  final bool forOrderPlacement;
+
+  const LocationSetupScreen({
+    super.key,
+    this.forOrderPlacement = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,27 +44,45 @@ class LocationSetupScreen extends StatelessWidget {
                         Text('Choose your location', style: AppTextStyles.h2),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          'You can enter the address manually or use the phone GPS for your current area.',
+                          forOrderPlacement
+                              ? 'Location is mandatory before placing the order. Enter it manually or use the phone GPS for your current area.'
+                              : 'You can enter the address manually or use the phone GPS for your current area.',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              fadeRoute(page: const _ManualLocationScreen()),
+                          onPressed: () async {
+                            final saved = await Navigator.of(context).push<bool>(
+                              fadeRoute(
+                                page: _ManualLocationScreen(
+                                  forOrderPlacement: forOrderPlacement,
+                                ),
+                              ),
                             );
+                            if (saved == true && context.mounted) {
+                              Navigator.of(context).pop(true);
+                            }
                           },
                           icon: const Icon(Icons.edit_location_alt_rounded),
                           label: const Text('Enter manually'),
                         ),
                         const SizedBox(height: 12),
                         OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.of(
+                          onPressed: () async {
+                            final saved = await Navigator.of(
                               context,
-                            ).push(fadeRoute(page: const _GpsLocationScreen()));
+                            ).push<bool>(
+                              fadeRoute(
+                                page: _GpsLocationScreen(
+                                  forOrderPlacement: forOrderPlacement,
+                                ),
+                              ),
+                            );
+                            if (saved == true && context.mounted) {
+                              Navigator.of(context).pop(true);
+                            }
                           },
                           icon: const Icon(Icons.gps_fixed_rounded),
                           label: const Text('Use Google GPS'),
@@ -79,7 +101,11 @@ class LocationSetupScreen extends StatelessWidget {
 }
 
 class _ManualLocationScreen extends StatefulWidget {
-  const _ManualLocationScreen();
+  final bool forOrderPlacement;
+
+  const _ManualLocationScreen({
+    required this.forOrderPlacement,
+  });
 
   @override
   State<_ManualLocationScreen> createState() => _ManualLocationScreenState();
@@ -118,9 +144,7 @@ class _ManualLocationScreenState extends State<_ManualLocationScreen> {
     );
 
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushAndRemoveUntil(fadeRoute(page: const HomeScreen()), (_) => false);
+    Navigator.of(context).pop(true);
   }
 
   @override
@@ -173,7 +197,11 @@ class _ManualLocationScreenState extends State<_ManualLocationScreen> {
 }
 
 class _GpsLocationScreen extends StatefulWidget {
-  const _GpsLocationScreen();
+  final bool forOrderPlacement;
+
+  const _GpsLocationScreen({
+    required this.forOrderPlacement,
+  });
 
   @override
   State<_GpsLocationScreen> createState() => _GpsLocationScreenState();
@@ -284,9 +312,7 @@ class _GpsLocationScreenState extends State<_GpsLocationScreen> {
     );
 
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushAndRemoveUntil(fadeRoute(page: const HomeScreen()), (_) => false);
+    Navigator.of(context).pop(true);
   }
 
   @override

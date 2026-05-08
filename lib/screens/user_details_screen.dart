@@ -7,7 +7,7 @@ import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
 import '../utils/route_transitions.dart';
-import 'location_setup_screen.dart';
+import 'home_screen.dart';
 
 class UserDetailsScreen extends StatefulWidget {
   const UserDetailsScreen({super.key});
@@ -56,7 +56,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
       if (!mounted) return;
       Navigator.of(
         context,
-      ).pushReplacement(fadeRoute(page: const LocationSetupScreen()));
+      ).pushReplacement(fadeRoute(page: const HomeScreen()));
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       setState(() {

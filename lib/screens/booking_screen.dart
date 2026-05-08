@@ -6,6 +6,7 @@ import '../providers/booking_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
+import 'location_setup_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -75,7 +76,14 @@ class _BookingScreenState extends State<BookingScreen> {
     });
   }
 
-  void _confirmBooking() {
+  Future<void> _confirmBooking() async {
+    final locationSaved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => const LocationSetupScreen(forOrderPlacement: true),
+      ),
+    );
+    if (locationSaved != true || !mounted) return;
+
     final auth = context.read<AuthProvider>();
     final bookingProvider = context.read<BookingProvider>();
     final userName = (auth.name?.trim().isNotEmpty ?? false)
@@ -103,7 +111,7 @@ class _BookingScreenState extends State<BookingScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Booked $_seatCount seats on ${_selectedDateTime.day}/${_selectedDateTime.month} at ${TimeOfDay.fromDateTime(_selectedDateTime).format(context)} for Rs. ${_totalCost.toStringAsFixed(0)}',
+          'Location saved and booked $_seatCount seats on ${_selectedDateTime.day}/${_selectedDateTime.month} at ${TimeOfDay.fromDateTime(_selectedDateTime).format(context)} for Rs. ${_totalCost.toStringAsFixed(0)}',
         ),
         behavior: SnackBarBehavior.floating,
       ),

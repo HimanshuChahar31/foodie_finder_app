@@ -8,7 +8,6 @@ import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
 import '../utils/route_transitions.dart';
 import 'home_screen.dart';
-import 'location_setup_screen.dart';
 import 'user_details_screen.dart';
 
 enum _AuthMode { choose, login, signup }
@@ -133,8 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
     Widget nextPage;
     if (!auth.hasBasicDetails) {
       nextPage = const UserDetailsScreen();
-    } else if (!auth.hasLocationDetails) {
-      nextPage = const LocationSetupScreen();
     } else {
       nextPage = const HomeScreen();
     }

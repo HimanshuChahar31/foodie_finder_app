@@ -14,6 +14,7 @@ import 'booking_screen.dart';
 import 'favorites_screen.dart';
 import 'insights_screen.dart';
 import 'profile_screen.dart';
+import 'support_chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -261,6 +262,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _navigateTo(const FavoritesScreen()),
                           ),
                           _HeaderIconButton(
+                            icon: Icons.support_agent_rounded,
+                            tooltip: 'AI Support',
+                            onPressed: () =>
+                                _navigateTo(const SupportChatScreen()),
+                          ),
+                          _HeaderIconButton(
                             icon: Icons.person_rounded,
                             tooltip: 'Profile',
                             onPressed: () => _navigateTo(const ProfileScreen()),
@@ -362,6 +369,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                0,
+                AppSpacing.md,
+                AppSpacing.sm,
+              ),
+              child: Card(
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: AppColors.accent,
+                    child: Icon(
+                      Icons.support_agent_rounded,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  title: Text('Foodie AI Support', style: AppTextStyles.h4),
+                  subtitle: Text(
+                    'Ask about refunds, bookings, payments, or login issues.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => _navigateTo(const SupportChatScreen()),
+                ),
               ),
             ),
           ),

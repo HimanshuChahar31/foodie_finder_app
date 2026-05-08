@@ -6,7 +6,6 @@ import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
-import 'location_setup_screen.dart';
 import 'user_details_screen.dart';
 
 class AuthGateScreen extends StatelessWidget {
@@ -24,9 +23,6 @@ class AuthGateScreen extends StatelessWidget {
         }
         if (!auth.hasBasicDetails) {
           return const UserDetailsScreen();
-        }
-        if (!auth.hasLocationDetails) {
-          return const LocationSetupScreen();
         }
         return const HomeScreen();
       },
