@@ -6,6 +6,7 @@ import '../providers/booking_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
+import '../widgets/app_image.dart';
 import 'location_setup_screen.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -19,48 +20,47 @@ class _BookingScreenState extends State<BookingScreen> {
   static final List<Restaurant> _hotels = [
     Restaurant(
       id: 'h1',
-      name: 'The Copper Tandoor',
+      name: 'Kake Di Hatti',
       rating: 4.8,
       distance: 1.2,
       pricePerSeat: 899,
-      imageUrl:
-          'https://loremflickr.com/900/600/north-indian,restaurant,interior',
+      imageUrl: 'assets/images/real/restaurants/kake-di-hatti.jpg',
       cuisine: 'North Indian - Family Dining',
       description:
-          'Warm tandoor plates, soft lighting, and roomy tables for relaxed dinner plans.',
+          'Rich tandoori platters, warm lighting, and roomy seating for classic family dinners.',
     ),
     Restaurant(
       id: 'h2',
-      name: 'Urban Spice Table',
+      name: 'Taj Courtyard',
       rating: 4.6,
       distance: 2.4,
       pricePerSeat: 699,
-      imageUrl: 'https://loremflickr.com/900/600/indian,street-food,restaurant',
-      cuisine: 'Street Food - Casual',
+      imageUrl: 'assets/images/real/restaurants/taj-courtyard.jpg',
+      cuisine: 'Signature Dining - Fine Casual',
       description:
-          'Fast service, bold chaats, and a lively dining room close to the city center.',
+          'Elegant interiors, attentive service, and polished tables for a refined meal out.',
     ),
     Restaurant(
       id: 'h3',
-      name: 'Green Bowl House',
+      name: 'Punjab Grill House',
       rating: 4.7,
       distance: 3.1,
       pricePerSeat: 799,
-      imageUrl: 'https://loremflickr.com/900/600/vegan,restaurant,interior',
-      cuisine: 'Vegan - Healthy',
+      imageUrl: 'assets/images/real/restaurants/punjab-grill-house.jpg',
+      cuisine: 'Punjabi Grill - Premium',
       description:
-          'Fresh bowls, quiet seating, and bright interiors for lighter group meals.',
+          'Smoky grills, paneer platters, and a premium dining room for long evening meals.',
     ),
     Restaurant(
       id: 'h4',
-      name: 'Harbor Grill Cafe',
+      name: 'Royal Dawat',
       rating: 4.5,
       distance: 4.0,
       pricePerSeat: 1199,
-      imageUrl: 'https://loremflickr.com/900/600/grill,restaurant,interior',
-      cuisine: 'Grill - Continental',
+      imageUrl: 'assets/images/real/restaurants/royal-dawat.jpg',
+      cuisine: 'Celebration Dining - Mughlai',
       description:
-          'Comfortable booth seating with grilled specials and a polished evening vibe.',
+          'A grand dining setup with festive ambience, kebabs, and rich North Indian mains.',
     ),
   ];
 
@@ -358,8 +358,8 @@ class _HotelBookingCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  Image.network(
-                    hotel.imageUrl,
+                  AppImage(
+                    source: hotel.imageUrl,
                     height: 138,
                     width: double.infinity,
                     fit: BoxFit.cover,

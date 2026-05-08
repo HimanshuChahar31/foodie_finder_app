@@ -3,6 +3,7 @@ import '../models/restaurant.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
+import 'app_image.dart';
 
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
@@ -46,8 +47,8 @@ class RestaurantCard extends StatelessWidget {
               ),
               child: AspectRatio(
                 aspectRatio: 3 / 2,
-                child: Image.network(
-                  restaurant.imageUrl,
+                child: AppImage(
+                  source: restaurant.imageUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(

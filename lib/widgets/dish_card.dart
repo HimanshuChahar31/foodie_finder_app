@@ -3,6 +3,7 @@ import '../models/dish.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_spacing.dart';
 import '../utils/app_text_styles.dart';
+import 'app_image.dart';
 
 class DishCard extends StatefulWidget {
   final Dish dish;
@@ -94,8 +95,8 @@ class _DishCardState extends State<DishCard>
                     topLeft: Radius.circular(24),
                     topRight: Radius.circular(24),
                   ),
-                  child: Image.network(
-                    widget.dish.imageUrl,
+                  child: AppImage(
+                    source: widget.dish.imageUrl,
                     height: 150,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -342,8 +343,8 @@ class _DishCardState extends State<DishCard>
                 topLeft: Radius.circular(12),
                 bottomLeft: Radius.circular(12),
               ),
-              child: Image.network(
-                widget.dish.imageUrl,
+              child: AppImage(
+                source: widget.dish.imageUrl,
                 height: 120,
                 width: 120,
                 fit: BoxFit.cover,

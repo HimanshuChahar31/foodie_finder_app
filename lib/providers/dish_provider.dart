@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../models/dish.dart';
 
 class DishProvider extends ChangeNotifier {
+  static String _dishImage(String fileName) =>
+      'assets/images/real/dishes/$fileName';
+
   final List<Dish> _dishes = [
     Dish(
       id: '1',
@@ -14,7 +17,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Pizza Palace',
       location: 'Downtown',
       rating: 4.5,
-      imageUrl: 'https://loremflickr.com/600/400/margherita,pizza',
+      imageUrl: _dishImage(
+        'margherita-pizza.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -27,7 +32,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Burger Joint',
       location: 'Uptown',
       rating: 4.2,
-      imageUrl: 'https://loremflickr.com/600/400/chicken,burger',
+      imageUrl: _dishImage(
+        'chicken-burger.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -40,7 +47,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Green Eats',
       location: 'Midtown',
       rating: 4.8,
-      imageUrl: 'https://loremflickr.com/600/400/vegan,salad,avocado',
+      imageUrl: _dishImage(
+        'vegan-salad.jpg',
+      ),
       category: 'Vegan',
     ),
     Dish(
@@ -53,7 +62,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Indian Spice',
       location: 'East Side',
       rating: 4.7,
-      imageUrl: 'https://loremflickr.com/600/400/paneer,tikka',
+      imageUrl: _dishImage(
+        'paneer-tikka.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -66,7 +77,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Steak House',
       location: 'West End',
       rating: 4.9,
-      imageUrl: 'https://loremflickr.com/600/400/beef,steak',
+      imageUrl: _dishImage(
+        'beef-steak.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -79,7 +92,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Healthy Bites',
       location: 'North Park',
       rating: 4.6,
-      imageUrl: 'https://loremflickr.com/600/400/quinoa,bowl',
+      imageUrl: _dishImage(
+        'quinoa-bowl.jpg',
+      ),
       category: 'Vegan',
     ),
     Dish(
@@ -92,7 +107,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Asian Fusion',
       location: 'South Gate',
       rating: 4.3,
-      imageUrl: 'https://loremflickr.com/600/400/vegetable,stir-fry',
+      imageUrl: _dishImage(
+        'vegetable-stir-fry.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -105,7 +122,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Seafood Delight',
       location: 'Harbor View',
       rating: 4.8,
-      imageUrl: 'https://loremflickr.com/600/400/grilled,salmon',
+      imageUrl: _dishImage(
+        'grilled-salmon.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -118,7 +137,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Breakfast Club',
       location: 'City Center',
       rating: 4.4,
-      imageUrl: 'https://loremflickr.com/600/400/avocado,toast',
+      imageUrl: _dishImage(
+        'avocado-toast.jpg',
+      ),
       category: 'Vegan',
     ),
     Dish(
@@ -131,7 +152,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Curry House',
       location: 'Old Town',
       rating: 4.6,
-      imageUrl: 'https://loremflickr.com/600/400/chicken,curry',
+      imageUrl: _dishImage(
+        'chicken-curry.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -144,7 +167,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Punjabi Zaika',
       location: 'Sector 14',
       rating: 4.5,
-      imageUrl: 'https://loremflickr.com/600/400/chole,bhature',
+      imageUrl: _dishImage(
+        'chole-bhature.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -157,7 +182,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Punjab Grill',
       location: 'Central Market',
       rating: 4.7,
-      imageUrl: 'https://loremflickr.com/600/400/dal,makhani',
+      imageUrl: _dishImage(
+        'dal-makhani.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -170,7 +197,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Royal Tandoor',
       location: 'MG Road',
       rating: 4.8,
-      imageUrl: 'https://loremflickr.com/600/400/paneer,butter,masala',
+      imageUrl: _dishImage(
+        'paneer-butter-masala.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -183,7 +212,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Ghar Ka Khana',
       location: 'Lake View',
       rating: 4.4,
-      imageUrl: 'https://loremflickr.com/600/400/rajma,chawal',
+      imageUrl: _dishImage(
+        'rajma-chawal.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -196,7 +227,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Udupi Sagar',
       location: 'South Avenue',
       rating: 4.6,
-      imageUrl: 'https://loremflickr.com/600/400/masala,dosa',
+      imageUrl: _dishImage(
+        'masala-dosa.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -209,7 +242,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Madras Cafe',
       location: 'Green Park',
       rating: 4.3,
-      imageUrl: 'https://loremflickr.com/600/400/idli,sambar',
+      imageUrl: _dishImage(
+        'idli-sambar.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -222,7 +257,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Biryani Blues',
       location: 'Ring Road',
       rating: 4.5,
-      imageUrl: 'https://loremflickr.com/600/400/vegetable,biryani',
+      imageUrl: _dishImage(
+        'vegetable-biryani.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -235,7 +272,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Paratha Point',
       location: 'Model Town',
       rating: 4.2,
-      imageUrl: 'https://loremflickr.com/600/400/aloo,paratha',
+      imageUrl: _dishImage(
+        'aloo-paratha-combo.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -248,7 +287,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Green Spice',
       location: 'Civil Lines',
       rating: 4.6,
-      imageUrl: 'https://loremflickr.com/600/400/palak,paneer',
+      imageUrl: _dishImage(
+        'palak-paneer.jpg',
+      ),
       category: 'Veg',
     ),
     Dish(
@@ -261,7 +302,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Veggie Delight',
       location: 'Nehru Place',
       rating: 4.4,
-      imageUrl: 'https://loremflickr.com/600/400/mushroom,curry',
+      imageUrl: _dishImage(
+        'kadai-mushroom.jpg',
+      ),
       category: 'Vegan',
     ),
     Dish(
@@ -274,7 +317,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Mughlai Darbar',
       location: 'Connaught Place',
       rating: 4.8,
-      imageUrl: 'https://loremflickr.com/600/400/butter,chicken',
+      imageUrl: _dishImage(
+        'butter-chicken.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -287,7 +332,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Nawabi Handi',
       location: 'Old Delhi',
       rating: 4.7,
-      imageUrl: 'https://loremflickr.com/600/400/chicken,biryani',
+      imageUrl: _dishImage(
+        'chicken-biryani.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -300,7 +347,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Kashmir Kitchen',
       location: 'Mall Road',
       rating: 4.7,
-      imageUrl: 'https://loremflickr.com/600/400/rogan,josh',
+      imageUrl: _dishImage(
+        'mutton-rogan-josh.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -313,7 +362,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Coastal Pot',
       location: 'Harbor Street',
       rating: 4.5,
-      imageUrl: 'https://loremflickr.com/600/400/fish,curry,rice',
+      imageUrl: _dishImage(
+        'fish-curry-rice.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -326,7 +377,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Desi Rasoi',
       location: 'Station Road',
       rating: 4.3,
-      imageUrl: 'https://loremflickr.com/600/400/egg,curry',
+      imageUrl: _dishImage(
+        'egg-curry.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -339,7 +392,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Tandoori Nights',
       location: 'Khan Market',
       rating: 4.6,
-      imageUrl: 'https://loremflickr.com/600/400/chicken,tikka',
+      imageUrl: _dishImage(
+        'chicken-tikka.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -352,7 +407,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Sea Breeze',
       location: 'Marine Drive',
       rating: 4.6,
-      imageUrl: 'https://loremflickr.com/600/400/prawn,masala',
+      imageUrl: _dishImage(
+        'prawn-masala.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -365,7 +422,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Bombay Bites',
       location: 'Linking Road',
       rating: 4.4,
-      imageUrl: 'https://loremflickr.com/600/400/keema,pav',
+      imageUrl: _dishImage(
+        'keema-pav.jpg',
+      ),
       category: 'Non-Veg',
     ),
     Dish(
@@ -378,7 +437,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Village Tadka',
       location: 'Heritage Lane',
       rating: 4.3,
-      imageUrl: 'https://loremflickr.com/600/400/baingan,bharta',
+      imageUrl: _dishImage(
+        'baingan-bharta.jpg',
+      ),
       category: 'Vegan',
     ),
     Dish(
@@ -391,7 +452,9 @@ class DishProvider extends ChangeNotifier {
       restaurantName: 'Annapurna Meals',
       location: 'Temple Road',
       rating: 4.2,
-      imageUrl: 'https://loremflickr.com/600/400/veg,pulao',
+      imageUrl: _dishImage(
+        'veg-pulao.jpg',
+      ),
       category: 'Vegan',
     ),
   ];

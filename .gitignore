@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Large source image dataset kept locally; the app uses curated assets/images.
+assets/Indian Food Images/
+
 # Symbolication related
 app.*.symbols
 
